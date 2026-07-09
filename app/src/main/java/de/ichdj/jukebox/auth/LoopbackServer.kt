@@ -31,7 +31,9 @@ object LoopbackServer {
         val deadline = System.currentTimeMillis() + timeoutMs
         ServerSocket().use { server ->
             server.reuseAddress = true
-            server.bind(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 16)
+            // Explizit IPv4: getLoopbackAddress() liefert auf Android ::1 (IPv6),
+            // der Browser verbindet aber auf die 127.0.0.1 aus der Redirect-URI.
+            server.bind(InetSocketAddress(InetAddress.getByName("127.0.0.1"), port), 16)
             server.soTimeout = 1000
             while (System.currentTimeMillis() < deadline && !Thread.currentThread().isInterrupted) {
                 val socket = try {
@@ -75,7 +77,15 @@ object LoopbackServer {
         }
         respond(
             s, 200,
-            page("Anmeldung erfolgreich! Du kannst dieses Fenster schließen und zur IchDJ-App zurückkehren."),
+            page(
+                "Anmeldung erfolgreich!" +
+                    "</p><p><a style=\"color:#FFB74D;font-size:1.2em\" " +
+                    "href=\"intent:#Intent;package=de.ichdj.jukebox;" +
+                    "action=android.intent.action.MAIN;" +
+                    "category=android.intent.category.LAUNCHER;end\">" +
+                    "➜ Zurück zur IchDJ-App</a></p><p>" +
+                    "(oder dieses Fenster einfach schließen)",
+            ),
         )
         return Result.Code(code)
     }

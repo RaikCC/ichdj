@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,14 +45,25 @@ fun OperatorScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding() // nicht unter die Navigationsleiste zeichnen
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
-        Text(
-            stringResource(R.string.operator_title),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.operator_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            // Immer sichtbar (nicht am scrollenden Listenende), damit am
+            // Gerät zweifelsfrei erkennbar ist, welcher Build läuft.
+            Text(
+                "IchDJ v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
         SectionCard(stringResource(R.string.operator_section_spotify)) {
             // Lokaler Feldinhalt, damit der Cursor beim Tippen nicht springt
@@ -160,13 +172,6 @@ fun OperatorScreen(
                 }
             }
         }
-
-        Text(
-            "IchDJ v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.End),
-        )
     }
 }
 
