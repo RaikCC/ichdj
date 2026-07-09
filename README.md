@@ -12,21 +12,14 @@ Das Repo enthält einen GitHub-Actions-Workflow
 jedem Push auf `main` automatisch eine signierte Release-APK baut:
 
 - als **Artifact** `ichdj-apk` am Workflow-Lauf, und
-- als **Release "latest"** mit stabiler Download-URL:
-  `https://github.com/<USER>/<REPO>/releases/download/latest/ichdj.apk`
-  – diese URL kann man direkt am Tablet im Browser öffnen.
+- als **Release "latest"** mit stabiler Download-URL, die man direkt am Tablet
+  im Browser öffnen kann:
 
-### Einmalige Einrichtung auf GitHub
+  **https://github.com/RaikCC/ichdj/releases/download/latest/ichdj.apk**
 
-```
-# Auf github.com ein neues (privates oder öffentliches) Repo anlegen, dann:
-git remote add origin https://github.com/<USER>/<REPO>.git
-git push -u origin main
-```
-
-Mehr ist nicht nötig – Actions ist standardmäßig aktiv. Der erste Lauf dauert
-ca. 5–8 Minuten. GitHub-Free reicht aus (öffentliche Repos: unbegrenzte
-Build-Minuten, private: 2000 min/Monat).
+Das Repo liegt auf https://github.com/RaikCC/ichdj. Jeder Push auf `main`
+baut neu (Dauer ca. 4–8 Minuten, GitHub-Free reicht: öffentliche Repos haben
+unbegrenzte Build-Minuten).
 
 ### Signatur / Keystore
 
