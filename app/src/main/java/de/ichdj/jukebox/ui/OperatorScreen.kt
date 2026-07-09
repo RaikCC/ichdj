@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import de.ichdj.jukebox.BuildConfig
 import de.ichdj.jukebox.R
 
 @Composable
@@ -159,6 +160,13 @@ fun OperatorScreen(
                 }
             }
         }
+
+        Text(
+            "IchDJ v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.End),
+        )
     }
 }
 

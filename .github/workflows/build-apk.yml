@@ -55,11 +55,18 @@ jobs:
           path: ichdj.apk
 
       # Zusätzlich als "latest"-Release veröffentlichen → stabile Download-URL,
-      # die man direkt am Tablet im Browser öffnen kann.
+      # die man direkt am Tablet im Browser öffnen kann. Titel/Beschreibung
+      # tragen die Version, damit auf der Releases-Seite sichtbar ist,
+      # welcher Build gerade hinter der URL liegt.
+      - name: Version auslesen
+        id: version
+        run: echo "name=$(grep -oP 'versionName = \"\K[^\"]+' app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
+
       - name: Release "latest" aktualisieren
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: IchDJ – aktueller Build
+          name: "IchDJ v${{ steps.version.outputs.name }} – aktueller Build"
+          body: "Version ${{ steps.version.outputs.name }} · Commit ${{ github.sha }} · Build-Nr. ${{ github.run_number }}"
           prerelease: true
           files: ichdj.apk
