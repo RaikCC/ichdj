@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IchDJ</string>
+    <string name="logo_text">I can haz DJ?</string>
+
+    <!-- Besucheransicht -->
+    <string name="wish_empty_box">Wünsch dir was …</string>
+    <string name="wish_now_playing">jetzt</string>
+    <string name="all_boxes_full">Gerade keine Wunschplätze mehr frei, warte bis der nächste Wunsch gespielt wurde.</string>
+    <string name="wishes_disabled">Wünsche sind gerade deaktiviert.</string>
+    <string name="queue_title">Queue</string>
+    <string name="wishes_title">Deine Wünsche</string>
+    <string name="not_connected">Noch nicht mit Spotify verbunden.</string>
+    <string name="connection_trouble">Verbindung zu Spotify gestört – versuche es weiter …</string>
+    <string name="queue_empty">Gerade läuft nichts.</string>
+
+    <!-- Suche -->
+    <string name="search_hint">Song suchen …</string>
+    <string name="search_no_results">Keine Songs gefunden.</string>
+    <string name="search_close">Schließen</string>
+    <string name="confirm_wish_title">Diesen Song wünschen?</string>
+    <string name="confirm_wish_text">Songwünsche können nicht zurückgenommen werden.</string>
+    <string name="confirm_wish_yes">Ja, wünschen!</string>
+    <string name="confirm_wish_no">Abbrechen</string>
+
+    <!-- Ablehnungen -->
+    <string name="reject_title">Das klappt leider nicht</string>
+    <string name="reject_too_long">Dieser Song ist zu lang. Es sind maximal %1$d Minuten erlaubt.</string>
+    <string name="reject_locked">Dieser Song lief vor kurzem. Er darf erst wieder ab %1$s Uhr gewünscht werden (noch %2$s).</string>
+    <string name="reject_already_queued">Dieser Song ist schon in der Queue.</string>
+    <string name="reject_no_slot">Gerade sind keine Wunschplätze frei.</string>
+    <string name="reject_no_connection">Keine Verbindung zu Spotify.</string>
+    <string name="reject_no_active_device">Spotify spielt gerade auf keinem Gerät. Der Veranstalter muss die Wiedergabe starten.</string>
+    <string name="reject_generic">Der Wunsch konnte nicht übermittelt werden: %1$s</string>
+    <string name="ok">OK</string>
+
+    <!-- Veranstalter -->
+    <string name="operator_title">Veranstalter-Menü</string>
+    <string name="operator_unlock_title">Veranstalter-Menü</string>
+    <string name="operator_unlock_subtitle">Mit der Gerätesperre entsperren</string>
+    <string name="operator_unlock_failed">Entsperren fehlgeschlagen.</string>
+    <string name="operator_section_spotify">Spotify-Verbindung</string>
+    <string name="operator_client_id">Spotify Client-ID (aus dem Developer Dashboard)</string>
+    <string name="operator_connect">Mit Spotify verbinden</string>
+    <string name="operator_disconnect">Verbindung trennen</string>
+    <string name="operator_connected_as">Verbunden als: %1$s</string>
+    <string name="operator_not_connected">Nicht verbunden</string>
+    <string name="operator_auth_failed">Anmeldung fehlgeschlagen: %1$s</string>
+    <string name="operator_no_browser">Kein Browser installiert – für die einmalige Anmeldung wird ein Browser benötigt.</string>
+    <string name="operator_section_settings">Einstellungen</string>
+    <string name="operator_wish_boxes">Anzahl der Wunschboxen</string>
+    <string name="operator_lock_minutes">Sperrzeit nach dem Abspielen (Minuten)</string>
+    <string name="operator_max_length">Maximale Songlänge für Wünsche (Minuten)</string>
+    <string name="operator_wishes_enabled">Wünsche aktiviert</string>
+    <string name="operator_section_kiosk">Kiosk &amp; App</string>
+    <string name="operator_kiosk_owner">Echter Kiosk-Modus aktiv (App ist Device Owner).</string>
+    <string name="operator_kiosk_pinned">Einfaches App-Pinning aktiv. Für echten Kiosk-Modus siehe README (Device Owner per adb).</string>
+    <string name="operator_back_to_visitor">Zurück zum Besuchermodus</string>
+    <string name="operator_exit_app">App beenden</string>
+</resources>

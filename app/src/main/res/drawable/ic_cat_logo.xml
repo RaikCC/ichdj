@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dummy-Katzenkopf für den "I can haz DJ?"-Schriftzug. Später durch das
+     richtige Logo ersetzen. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Ohren -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M9,18 L7,3 L21,10 Z" />
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M39,18 L41,3 L27,10 Z" />
+    <!-- Kopf -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M24,10 a17,16 0 1,0 0.01,0 Z" />
+    <!-- Augen -->
+    <path
+        android:fillColor="#121212"
+        android:pathData="M17,23 a3,3.5 0 1,0 0.01,0 Z" />
+    <path
+        android:fillColor="#121212"
+        android:pathData="M31,23 a3,3.5 0 1,0 0.01,0 Z" />
+    <!-- Nase -->
+    <path
+        android:fillColor="#121212"
+        android:pathData="M21.5,31 L26.5,31 L24,34.5 Z" />
+    <!-- Schnurrhaare -->
+    <path
+        android:strokeColor="#121212"
+        android:strokeWidth="1.4"
+        android:pathData="M20,33 L10,31 M20,35 L10,37 M28,33 L38,31 M28,35 L38,37" />
+</vector>

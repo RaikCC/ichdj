@@ -1,0 +1,65 @@
+name: APK bauen
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Der Sideload-Keystore wird beim allerersten Lauf erzeugt und ins Repo
+      # committet, damit alle folgenden Builds dieselbe Signatur tragen
+      # (Updates lassen sich dann ohne Deinstallation installieren).
+      - name: Keystore sicherstellen
+        run: |
+          if [ ! -f signing/ichdj-release.jks ]; then
+            mkdir -p signing
+            keytool -genkeypair -v \
+              -keystore signing/ichdj-release.jks \
+              -alias ichdj -keyalg RSA -keysize 2048 -validity 10950 \
+              -storepass ichdj-sideload -keypass ichdj-sideload \
+              -dname "CN=IchDJ Sideload, O=IchDJ"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add signing/ichdj-release.jks
+            git commit -m "ci: Sideload-Keystore automatisch erzeugt"
+            git push
+          fi
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Release-APK bauen
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: APK umbenennen
+        run: cp app/build/outputs/apk/release/app-release.apk ichdj.apk
+
+      - name: APK als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: ichdj-apk
+          path: ichdj.apk
+
+      # Zusätzlich als "latest"-Release veröffentlichen → stabile Download-URL,
+      # die man direkt am Tablet im Browser öffnen kann.
+      - name: Release "latest" aktualisieren
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: IchDJ – aktueller Build
+          prerelease: true
+          files: ichdj.apk

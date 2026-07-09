@@ -1,0 +1,18 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Lokale Konfiguration (SDK-Pfad etc.)
+local.properties
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+captures/
+.cxx/
+
+# Sonstiges
+*.log
+/*.apk
