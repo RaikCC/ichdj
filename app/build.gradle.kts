@@ -5,6 +5,11 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Lokale Builds: Ausgaben aus dem OneDrive-Ordner heraushalten (OneDrive
+// sperrt sonst Zwischendateien → AccessDeniedException). CI setzt die
+// Variable nicht und baut normal unter app/build.
+System.getenv("ICHDJ_BUILD_DIR")?.let { layout.buildDirectory.set(File(it)) }
+
 android {
     namespace = "de.ichdj.jukebox"
     compileSdk = 35

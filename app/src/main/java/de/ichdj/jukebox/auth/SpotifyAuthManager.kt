@@ -38,7 +38,10 @@ class SpotifyAuthManager(
     private val client: OkHttpClient,
 ) {
     companion object {
-        const val REDIRECT_PORT = 8899
+        // Port 8888: teilt sich die Registrierung mit dem bestehenden
+        // spotd-Client des Veranstalters – Loopback ist pro Gerät, daher
+        // kollisionsfrei, und im Dashboard muss nichts geändert werden.
+        const val REDIRECT_PORT = 8888
         const val REDIRECT_PATH = "/callback"
 
         /** Muss exakt so im Spotify Developer Dashboard eingetragen sein. */

@@ -31,12 +31,17 @@ gedacht. Fehlt er, erzeugt der CI-Lauf ihn automatisch neu und committet ihn.
 
 ## Spotify einrichten (einmalig)
 
-1. Auf https://developer.spotify.com/dashboard eine App anlegen
-   (der Premium-Account des Veranstalters genügt).
-2. Bei **Redirect URIs** exakt eintragen: `http://127.0.0.1:8899/callback`
-   (Loopback-Adresse; von Spotify seit den Sicherheitsänderungen 2025
-   ausdrücklich erlaubt – eine eigene Domain ist nicht nötig).
-3. Als API **Web API** auswählen und die **Client ID** kopieren.
+1. Es wird eine bestehende App-Registrierung mitgenutzt (Spotify vergibt
+   keine neuen Dev-Clients mehr beliebig): Die App verwendet den Redirect
+   `http://127.0.0.1:8888/callback` – identisch mit der vorhandenen
+   spotd-Registrierung, im Dashboard ist nichts zu ändern. (Loopback-Adressen
+   gelten pro Gerät; spotd auf dem Server und IchDJ auf dem Tablet kommen
+   sich nicht in die Quere, auch die Tokens sind unabhängig.)
+2. Auf https://developer.spotify.com/dashboard die **Client ID** der
+   bestehenden App kopieren.
+3. Hinweis: Rate-Limits gelten pro Client-ID und werden mit spotd geteilt.
+   Falls Spotify mit HTTP 429 drosselt, das Poll-Intervall erhöhen
+   (`pollIntervalSeconds` in den Settings-Defaults).
 4. In der App: 5× schnell auf das Logo tippen → Veranstaltermenü → Client-ID
    eintragen → „Mit Spotify verbinden" (dafür muss ein Browser auf dem Tablet
    installiert sein; nur für diese einmalige Anmeldung).
@@ -79,9 +84,14 @@ diesen einen Ordner löschen.**
 ```powershell
 $env:JAVA_HOME = "$env:LOCALAPPDATA\ichdj-build\jdk"
 $env:GRADLE_USER_HOME = "$env:LOCALAPPDATA\ichdj-build\gradle-home"
-.\gradlew.bat assembleRelease
-# Ergebnis: app\build\outputs\apk\release\app-release.apk
+$env:ICHDJ_BUILD_DIR = "$env:LOCALAPPDATA\ichdj-build\out\app"   # Build-Ausgaben raus aus OneDrive
+.\gradlew.bat --project-cache-dir "$env:LOCALAPPDATA\ichdj-build\project-cache" assembleRelease
+# Ergebnis: %LOCALAPPDATA%\ichdj-build\out\app\outputs\apk\release\app-release.apk
 ```
+
+Wichtig: `ICHDJ_BUILD_DIR` setzen, sonst schreibt Gradle nach `app\build` im
+OneDrive-Ordner – OneDrive sperrt dort sporadisch Dateien und der Build
+schlägt mit `AccessDeniedException` fehl.
 
 ## Architektur (Kurzüberblick)
 
@@ -89,7 +99,7 @@ $env:GRADLE_USER_HOME = "$env:LOCALAPPDATA\ichdj-build\gradle-home"
 |---|---|
 | `core` | Einstellungen (DataStore), Abspiel-Historie (Wiederholsperre), Wunsch-Persistenz, Zeitformatierung |
 | `net` | Spotify Web API (OkHttp + kotlinx.serialization) |
-| `auth` | OAuth 2.0 PKCE mit Loopback-Redirect (`http://127.0.0.1:8899/callback`), Token-Verwaltung |
+| `auth` | OAuth 2.0 PKCE mit Loopback-Redirect (`http://127.0.0.1:8888/callback`), Token-Verwaltung |
 | `engine` | Kernlogik: Polling von Playback + Queue, Wunsch-Lebenszyklus, Regeln (Sperrzeit, Maximallänge) |
 | `kiosk` | Immersive Mode, Lock-Task/Pinning, Device-Owner-Receiver |
 | `ui` | Jetpack Compose: Besucheransicht, Suche, Veranstaltermenü |
