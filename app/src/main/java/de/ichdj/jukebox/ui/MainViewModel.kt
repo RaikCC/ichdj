@@ -14,7 +14,9 @@ import de.ichdj.jukebox.engine.EngineState
 import de.ichdj.jukebox.engine.WishResult
 import de.ichdj.jukebox.model.Track
 import de.ichdj.jukebox.model.Wish
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -277,15 +279,27 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
     // ---- Veranstalter ----
 
+    private var authJob: Job? = null
+
     fun connectSpotify(activityContext: Context) {
-        if (authBusyFlow.value) return
-        viewModelScope.launch {
+        // Erneutes Tippen bricht einen hängenden Versuch ab und startet neu
+        // (gibt auch den Loopback-Port wieder frei).
+        val previous = authJob
+        authJob = viewModelScope.launch {
+            previous?.cancelAndJoin()
             authBusyFlow.value = true
             authErrorFlow.value = null
-            val result = container.auth.authorize(activityContext)
-            authBusyFlow.value = false
-            if (result is SpotifyAuthManager.AuthResult.Failure) {
-                authErrorFlow.value = result.message
+            try {
+                val result = container.auth.authorize(activityContext)
+                if (result is SpotifyAuthManager.AuthResult.Failure) {
+                    authErrorFlow.value = result.message
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                authErrorFlow.value = e.message ?: "Unerwarteter Fehler"
+            } finally {
+                authBusyFlow.value = false
             }
         }
     }

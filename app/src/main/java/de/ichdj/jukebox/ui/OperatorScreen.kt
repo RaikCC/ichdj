@@ -81,13 +81,14 @@ fun OperatorScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
+                // Bewusst auch während eines laufenden Versuchs klickbar:
+                // ein erneuter Tipp bricht ab und startet die Anmeldung neu.
                 Button(
                     onClick = onConnect,
-                    enabled = !state.authBusy &&
-                        (clientIdInput ?: state.settings.clientId).isNotBlank(),
+                    enabled = (clientIdInput ?: state.settings.clientId).isNotBlank(),
                 ) {
                     Text(
-                        if (state.authBusy) "…"
+                        if (state.authBusy) "… (neu starten)"
                         else stringResource(R.string.operator_connect),
                     )
                 }

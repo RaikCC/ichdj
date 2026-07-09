@@ -1,5 +1,6 @@
 package de.ichdj.jukebox.auth
 
+import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -12,6 +13,11 @@ import java.net.URLDecoder
  * entgegennimmt. Spotify erlaubt (seit den Sicherheitsänderungen 2025) nur
  * noch HTTPS- oder explizite Loopback-Redirect-URIs – dieser Server bedient
  * letzteres, ohne dass eine eigene Domain nötig ist.
+ *
+ * Wichtig: Browser öffnen neben der eigentlichen Navigation oft zusätzliche
+ * Verbindungen (Preconnect/Spekulation, /favicon.ico). Solche Verbindungen
+ * dürfen den Listener nicht beenden – er lauscht weiter, bis der echte
+ * Redirect mit passendem state eintrifft oder das Timeout abläuft.
  */
 object LoopbackServer {
 
@@ -25,7 +31,7 @@ object LoopbackServer {
         val deadline = System.currentTimeMillis() + timeoutMs
         ServerSocket().use { server ->
             server.reuseAddress = true
-            server.bind(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 1)
+            server.bind(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 16)
             server.soTimeout = 1000
             while (System.currentTimeMillis() < deadline && !Thread.currentThread().isInterrupted) {
                 val socket = try {
@@ -33,36 +39,45 @@ object LoopbackServer {
                 } catch (_: SocketTimeoutException) {
                     continue
                 }
-                socket.use { s ->
-                    s.soTimeout = 5000
-                    val requestLine = s.getInputStream().bufferedReader().readLine() ?: return@use
-                    val target = requestLine.split(" ").getOrNull(1) ?: return@use
-                    if (!target.startsWith(path)) {
-                        respond(s, 404, "Not found")
-                        return@use
-                    }
-                    val params = parseQuery(target.substringAfter('?', ""))
-                    if (params["state"] != expectedState) {
-                        respond(s, 400, page("Ungültige Anfrage (state mismatch)."))
-                        return Result.Error("State-Parameter stimmt nicht überein")
-                    }
-                    params["error"]?.let { err ->
-                        respond(s, 200, page("Anmeldung abgebrochen: $err"))
-                        return Result.Error(err)
-                    }
-                    val code = params["code"] ?: run {
-                        respond(s, 400, page("Kein Code erhalten."))
-                        return Result.Error("Kein Autorisierungscode erhalten")
-                    }
-                    respond(
-                        s, 200,
-                        page("Anmeldung erfolgreich! Du kannst dieses Fenster schließen und zur IchDJ-App zurückkehren."),
-                    )
-                    return Result.Code(code)
+                val result = try {
+                    socket.use { handleConnection(it, path, expectedState) }
+                } catch (_: IOException) {
+                    null // kaputte oder spekulative Verbindung → weiter lauschen
                 }
+                if (result != null) return result
             }
         }
         return Result.Error("Zeitüberschreitung bei der Anmeldung")
+    }
+
+    /** Liefert null, wenn weiter gelauscht werden soll. */
+    private fun handleConnection(s: Socket, path: String, expectedState: String): Result? {
+        s.soTimeout = 3000
+        val requestLine = s.getInputStream().bufferedReader().readLine() ?: return null
+        val target = requestLine.split(" ").getOrNull(1) ?: return null
+        if (!target.startsWith(path)) {
+            respond(s, 404, "Not found") // z.B. /favicon.ico
+            return null
+        }
+        val params = parseQuery(target.substringAfter('?', ""))
+        if (params["state"] != expectedState) {
+            // Veralteter Aufruf (z.B. alter Browser-Tab) → echten Redirect abwarten
+            respond(s, 400, page("Ungültige Anfrage – bitte die Anmeldung in der App neu starten."))
+            return null
+        }
+        params["error"]?.let { err ->
+            respond(s, 200, page("Anmeldung abgebrochen: $err"))
+            return Result.Error(err)
+        }
+        val code = params["code"] ?: run {
+            respond(s, 400, page("Kein Code erhalten."))
+            return Result.Error("Kein Autorisierungscode erhalten")
+        }
+        respond(
+            s, 200,
+            page("Anmeldung erfolgreich! Du kannst dieses Fenster schließen und zur IchDJ-App zurückkehren."),
+        )
+        return Result.Code(code)
     }
 
     private fun parseQuery(query: String): Map<String, String> =

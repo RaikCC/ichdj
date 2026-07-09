@@ -9,7 +9,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import de.ichdj.jukebox.core.SettingsRepository
 import de.ichdj.jukebox.net.SpotifyApi
 import de.ichdj.jukebox.net.TokenResponse
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -87,24 +87,32 @@ class SpotifyAuthManager(
             .appendQueryParameter("code_challenge", challenge)
             .build()
 
-        return coroutineScope {
-            val server = async(Dispatchers.IO) {
-                runInterruptible {
-                    LoopbackServer.awaitCode(REDIRECT_PORT, REDIRECT_PATH, state, AUTH_TIMEOUT_MS)
+        // Fehler dürfen nie ungefangen nach oben schlagen (App-Absturz im
+        // Hintergrund würde auch den Loopback-Listener mitreißen).
+        return try {
+            coroutineScope {
+                val server = async(Dispatchers.IO) {
+                    runInterruptible {
+                        LoopbackServer.awaitCode(REDIRECT_PORT, REDIRECT_PATH, state, AUTH_TIMEOUT_MS)
+                    }
+                }
+                delay(200) // Server binden lassen, bevor der Browser lossschickt
+
+                if (!openBrowser(activityContext, authUri)) {
+                    server.cancel()
+                    return@coroutineScope AuthResult.Failure("Kein Browser installiert")
+                }
+
+                when (val result = server.await()) {
+                    is LoopbackServer.Result.Error -> AuthResult.Failure(result.message)
+                    is LoopbackServer.Result.Code ->
+                        exchangeCode(clientId, result.code, verifier)
                 }
             }
-            delay(200) // Server binden lassen, bevor der Browser lossschickt
-
-            if (!openBrowser(activityContext, authUri)) {
-                server.cancel()
-                return@coroutineScope AuthResult.Failure("Kein Browser installiert")
-            }
-
-            when (val result = server.await()) {
-                is LoopbackServer.Result.Error -> AuthResult.Failure(result.message)
-                is LoopbackServer.Result.Code ->
-                    exchangeCode(clientId, result.code, verifier)
-            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AuthResult.Failure(e.message ?: "Unerwarteter Fehler bei der Anmeldung")
         }
     }
 
