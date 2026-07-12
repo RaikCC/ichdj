@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -94,10 +95,24 @@ fun VisitorScreen(
 }
 
 /**
+ * Sucht in assets/branding/ eine Datei mit diesem Basisnamen – das Format
+ * ist egal (svg, png, webp, jpg), es zählt der Name vor der Endung.
+ */
+@Composable
+private fun brandingAsset(baseName: String): String? {
+    val context = LocalContext.current
+    return remember(baseName) {
+        val files = runCatching { context.assets.list("branding")?.toList() }
+            .getOrNull().orEmpty()
+        files.firstOrNull { it.substringBeforeLast('.') == baseName }
+            ?.let { "file:///android_asset/branding/$it" }
+    }
+}
+
+/**
  * Logo-Zeile (mittig zentriert); fünfmaliges schnelles Tippen öffnet das
- * Veranstaltermenü. Die Grafiken sind echte SVGs aus den Assets
- * (assets/branding/logo.svg und assets/branding/wordmark.svg) und können
- * dort ausgetauscht werden.
+ * Veranstaltermenü. Die Grafiken kommen aus assets/branding/ (logo.* und
+ * wordmark.*) und können dort ausgetauscht werden – SVG oder Rastergrafik.
  */
 @Composable
 private fun LogoBar(onQuintupleTap: () -> Unit) {
@@ -122,14 +137,14 @@ private fun LogoBar(onQuintupleTap: () -> Unit) {
             },
     ) {
         AsyncImage(
-            model = "file:///android_asset/branding/logo.svg",
+            model = brandingAsset("logo"),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier.size(52.dp),
         )
         Spacer(Modifier.width(14.dp))
         AsyncImage(
-            model = "file:///android_asset/branding/wordmark.svg",
+            model = brandingAsset("wordmark"),
             contentDescription = stringResource(R.string.logo_text),
             contentScale = ContentScale.Fit,
             modifier = Modifier

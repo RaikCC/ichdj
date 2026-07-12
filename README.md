@@ -97,12 +97,14 @@ schlägt mit `AccessDeniedException` fehl.
 
 | Asset | Pfad | Format |
 |---|---|---|
-| Katzenkopf-Logo (Besucheransicht) | `app/src/main/assets/branding/logo.svg` | echtes SVG, wird zur Laufzeit gerendert. `width`/`height`-Attribute müssen gesetzt sein. |
-| Schriftzug „I can haz DJ?" (Besucheransicht) | `app/src/main/assets/branding/wordmark.svg` | echtes SVG. Text am besten in Pfade umwandeln, dann ist keine Schriftart nötig. |
-| App-Icon (Launcher) | `app/src/main/res/drawable/ic_launcher_foreground.xml` | Android **Vector Drawable** (kein rohes SVG!). SVG z.B. mit Android Studio („Vector Asset") oder svg2vector konvertieren. Icon-Hintergrundfarbe: `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` bzw. `res/values/colors.xml`. |
+| Katzenkopf-Logo (Besucheransicht) | `app/src/main/assets/branding/logo.*` | SVG **oder** Rastergrafik (PNG/WebP, transparenter Hintergrund). Empfehlung PNG: ~512×512 px. |
+| Schriftzug „I can haz DJ?" (Besucheransicht) | `app/src/main/assets/branding/wordmark.*` | SVG **oder** Rastergrafik. Empfehlung PNG: Höhe ~256 px, Breite proportional. |
+| App-Icon (Launcher) | `app/src/main/res/drawable/ic_launcher_foreground.xml` | Android Vector Drawable – für Raster stattdessen ein 432×432-px-PNG liefern (Motiv in den inneren ~288 px), Einbau siehe Adaptive-Icon-Doku. |
 
-Einfach die Dateien unter gleichem Namen ersetzen und pushen – der nächste
-Build nimmt sie automatisch mit.
+Es zählt der Dateiname vor der Endung (`logo.*`, `wordmark.*`) – die alte
+Platzhalterdatei entfernen, eigene Datei reinlegen, pushen; der nächste
+Build nimmt sie automatisch mit. Die App zeigt das Logo mit 52 dp, den
+Schriftzug mit 40 dp Höhe auf dunklem Hintergrund (#121212).
 
 ## Architektur (Kurzüberblick)
 
