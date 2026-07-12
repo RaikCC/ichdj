@@ -118,8 +118,9 @@ private fun brandingAsset(baseName: String): String? {
 
 /**
  * Logo-Zeile (mittig zentriert); fünfmaliges schnelles Tippen öffnet das
- * Veranstaltermenü. Die Grafiken kommen aus assets/branding/ (logo.* und
- * wordmark.*) und können dort ausgetauscht werden – SVG oder Rastergrafik.
+ * Veranstaltermenü. Angezeigt wird nur die Wordmark (assets/branding/
+ * wordmark.*, Logo ist darin integriert); logo.* bleibt als Referenz und
+ * Quelle für das App-Icon im Ordner.
  */
 @Composable
 private fun LogoBar(onQuintupleTap: () -> Unit) {
@@ -144,19 +145,12 @@ private fun LogoBar(onQuintupleTap: () -> Unit) {
             },
     ) {
         AsyncImage(
-            model = brandingAsset("logo"),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(52.dp),
-        )
-        Spacer(Modifier.width(14.dp))
-        AsyncImage(
             model = brandingAsset("wordmark"),
             contentDescription = stringResource(R.string.logo_text),
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .height(40.dp)
-                .widthIn(max = 320.dp),
+                .height(52.dp)
+                .widthIn(max = 360.dp),
         )
     }
 }

@@ -97,14 +97,12 @@ schlägt mit `AccessDeniedException` fehl.
 
 | Asset | Pfad | Format |
 |---|---|---|
-| Katzenkopf-Logo (Besucheransicht) | `app/src/main/assets/branding/logo.*` | SVG **oder** Rastergrafik (PNG/WebP, transparenter Hintergrund). Empfehlung PNG: ~512×512 px. |
-| Schriftzug „I can haz DJ?" (Besucheransicht) | `app/src/main/assets/branding/wordmark.*` | SVG **oder** Rastergrafik. Empfehlung PNG: Höhe ~256 px, Breite proportional. |
-| App-Icon (Launcher) | `app/src/main/res/drawable/ic_launcher_foreground.xml` | Android Vector Drawable – für Raster stattdessen ein 432×432-px-PNG liefern (Motiv in den inneren ~288 px), Einbau siehe Adaptive-Icon-Doku. |
+| Wordmark (Besucheransicht, Logo integriert) | `app/src/main/assets/branding/wordmark.*` | SVG **oder** Rastergrafik (PNG/WebP, transparent). Angezeigt mit 52 dp Höhe auf #121212. |
+| Logo (Referenz + Quelle fürs App-Icon) | `app/src/main/assets/branding/logo.png` | Wird in der App selbst nicht angezeigt. |
+| App-Icon (Launcher) | `app/src/main/res/drawable-*dpi/ic_launcher_foreground.png` | Aus `logo.png` generiert (Motiv in der Safe-Zone des adaptiven Icons, dunkler Hintergrund aus `colors.xml`). Bei neuem Logo neu generieren lassen. |
 
-Es zählt der Dateiname vor der Endung (`logo.*`, `wordmark.*`) – die alte
-Platzhalterdatei entfernen, eigene Datei reinlegen, pushen; der nächste
-Build nimmt sie automatisch mit. Die App zeigt das Logo mit 52 dp, den
-Schriftzug mit 40 dp Höhe auf dunklem Hintergrund (#121212).
+Es zählt der Dateiname vor der Endung (`wordmark.*`) – Datei ersetzen,
+pushen; der nächste Build nimmt sie automatisch mit.
 
 ## Architektur (Kurzüberblick)
 

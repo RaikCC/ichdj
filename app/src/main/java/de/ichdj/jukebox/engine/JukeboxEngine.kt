@@ -10,6 +10,7 @@ import de.ichdj.jukebox.model.Wish
 import de.ichdj.jukebox.net.SpotifyApi
 import de.ichdj.jukebox.net.SpotifyApiException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
 
 /** Der im Master gerade laufende Track samt Fortschritt zum Abrufzeitpunkt. */
@@ -67,6 +69,16 @@ class JukeboxEngine(
     private var failureStreak = 0
     private var started = false
 
+    /** Weckt die Poll-Schleife vorzeitig, z.B. direkt nach einem neuen Wunsch. */
+    private val resyncRequests = Channel<Unit>(Channel.CONFLATED)
+
+    /**
+     * Spotifys Queue-Endpoint hinkt dem Einreihen einige Sekunden hinterher.
+     * So lange gilt ein frischer Wunsch nicht als "vom Master entfernt",
+     * auch wenn er im Poll noch fehlt.
+     */
+    private val freshWishGraceMillis = 20_000L
+
     fun start() {
         if (started) return
         started = true
@@ -75,7 +87,9 @@ class JukeboxEngine(
             while (isActive) {
                 val s = settings.current()
                 pollOnce(s)
-                delay(s.pollIntervalSeconds.coerceAtLeast(2) * 1000L)
+                val intervalMs = s.pollIntervalSeconds.coerceAtLeast(2) * 1000L
+                val poked = withTimeoutOrNull(intervalMs) { resyncRequests.receive() } != null
+                if (poked) delay(1500) // Spotify kurz Zeit geben, das Einreihen zu verarbeiten
             }
         }
     }
@@ -122,6 +136,7 @@ class JukeboxEngine(
 
     private suspend fun updateWishes(current: CurrentPlayback?, queue: List<Track>) {
         wishMutex.withLock {
+            val now = System.currentTimeMillis()
             val queueUris = queue.map { it.uri }.toSet()
             val old = _state.value.wishes
             val updated = old.mapNotNull { wish ->
@@ -130,6 +145,9 @@ class JukeboxEngine(
                         wish.copy(startedPlaying = true) // spielt gerade (interne Nummer 0)
                     wish.startedPlaying -> null // fertig gespielt → Box wird frei
                     wish.track.uri in queueUris -> wish // wartet noch
+                    // Frisch eingereiht: Queue-Endpoint hinkt hinterher → behalten,
+                    // sonst würde der Wunsch fälschlich als "entfernt" gelten
+                    now - wish.wishedAtMillis < freshWishGraceMillis -> wish
                     else -> null // vom Master aus der Queue entfernt
                 }
             }
@@ -175,6 +193,7 @@ class JukeboxEngine(
             wishStore.save(wishes)
             // Queue optimistisch ergänzen; der nächste Poll liefert die echte Reihenfolge
             _state.update { it.copy(wishes = wishes, queue = it.queue + track) }
+            resyncRequests.trySend(Unit) // zeitnah neu abgleichen
             WishResult.Accepted
         }
     }
