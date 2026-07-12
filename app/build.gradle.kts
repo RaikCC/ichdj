@@ -18,8 +18,8 @@ android {
         applicationId = "de.ichdj.jukebox"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.1.8"
+        versionCode = 10
+        versionName = "0.1.9"
     }
 
     // Sideload-Keystore: wird beim ersten CI-Lauf automatisch erzeugt und committet.

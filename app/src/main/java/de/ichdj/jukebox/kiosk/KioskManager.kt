@@ -56,6 +56,23 @@ class KioskManager(private val activity: Activity) {
         }
     }
 
+    /**
+     * Gibt den Device-Owner-Status wieder frei (per adb lässt sich ein echter
+     * Device Owner nicht entfernen – nur die App selbst darf das).
+     */
+    fun clearDeviceOwner(): Boolean = try {
+        if (isDeviceOwner()) {
+            unpin()
+            @Suppress("DEPRECATION")
+            dpm.clearDeviceOwnerApp(activity.packageName)
+            true
+        } else {
+            false
+        }
+    } catch (_: Exception) {
+        false
+    }
+
     private fun insetsController(): WindowInsetsControllerCompat =
         WindowInsetsControllerCompat(activity.window, activity.window.decorView)
 

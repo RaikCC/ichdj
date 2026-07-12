@@ -46,6 +46,7 @@ fun OperatorScreen(
     vm: MainViewModel,
     isDeviceOwner: Boolean,
     onConnect: () -> Unit,
+    onReleaseDeviceOwner: () -> Unit,
     onExitApp: () -> Unit,
 ) {
     Column(
@@ -150,22 +151,30 @@ fun OperatorScreen(
                 step = 1,
                 onChange = vm::setMaxTrackMinutes,
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    stringResource(R.string.operator_wishes_enabled),
-                    modifier = Modifier.weight(1f),
-                )
-                Switch(
-                    checked = state.settings.wishesEnabled,
-                    onCheckedChange = vm::setWishesEnabled,
-                )
-            }
+            SwitchRow(
+                label = stringResource(R.string.operator_wishes_enabled),
+                checked = state.settings.wishesEnabled,
+                onChange = vm::setWishesEnabled,
+            )
+            SwitchRow(
+                label = stringResource(R.string.operator_keep_screen_on),
+                checked = state.settings.keepScreenOn,
+                onChange = vm::setKeepScreenOn,
+            )
+            SwitchRow(
+                label = stringResource(R.string.operator_wish_log),
+                checked = state.settings.wishLogEnabled,
+                onChange = vm::setWishLogEnabled,
+            )
+            Text(
+                stringResource(R.string.operator_wish_log_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         SectionCard(stringResource(R.string.operator_section_kiosk)) {
+            var confirmRelease by remember { mutableStateOf(false) }
             Text(
                 stringResource(
                     if (isDeviceOwner) R.string.operator_kiosk_owner
@@ -187,8 +196,51 @@ fun OperatorScreen(
                 ) {
                     Text(stringResource(R.string.operator_exit_app))
                 }
+                if (isDeviceOwner) {
+                    OutlinedButton(
+                        onClick = { confirmRelease = true },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                    ) {
+                        Text(stringResource(R.string.operator_release_kiosk))
+                    }
+                }
+            }
+            if (confirmRelease) {
+                AlertDialog(
+                    onDismissRequest = { confirmRelease = false },
+                    title = { Text(stringResource(R.string.operator_release_kiosk_confirm_title)) },
+                    text = { Text(stringResource(R.string.operator_release_kiosk_confirm_text)) },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                confirmRelease = false
+                                onReleaseDeviceOwner()
+                            },
+                        ) {
+                            Text(stringResource(R.string.operator_release_kiosk))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { confirmRelease = false }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(label, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = onChange)
     }
 }
 

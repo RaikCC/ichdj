@@ -54,9 +54,17 @@
     <string name="operator_lock_minutes">Sperrzeit nach dem Abspielen (Minuten)</string>
     <string name="operator_max_length">Maximale Songlänge für Wünsche (Minuten)</string>
     <string name="operator_wishes_enabled">Wünsche aktiviert</string>
+    <string name="operator_keep_screen_on">Display dauerhaft an</string>
+    <string name="operator_wish_log">Wünsche in Spotify-Playlist protokollieren</string>
+    <string name="operator_wish_log_hint">Playlist „Ich DJ Wünsche – JJJJ-MM-TT" im Spotify-Konto. Falls die Verbindung mit einer älteren App-Version hergestellt wurde: einmal trennen und neu verbinden (neue Berechtigungen nötig).</string>
     <string name="operator_section_kiosk">Kiosk &amp; App</string>
     <string name="operator_kiosk_owner">Echter Kiosk-Modus aktiv (App ist Device Owner).</string>
     <string name="operator_kiosk_pinned">Einfaches App-Pinning aktiv. Für echten Kiosk-Modus siehe README (Device Owner per adb).</string>
     <string name="operator_back_to_visitor">Zurück zum Besuchermodus</string>
     <string name="operator_exit_app">App beenden</string>
+    <string name="operator_release_kiosk">Kiosk-Modus (Device Owner) aufheben</string>
+    <string name="operator_release_kiosk_confirm_title">Device Owner aufheben?</string>
+    <string name="operator_release_kiosk_confirm_text">Die App verliert die Kiosk-Rechte, danach gilt nur noch normales App-Pinning. Wiederherstellen geht nur per adb (dafür müssen wieder alle Konten vom Gerät entfernt werden).</string>
+    <string name="operator_release_done">Kiosk-Modus aufgehoben.</string>
+    <string name="operator_release_failed">Aufheben fehlgeschlagen.</string>
 </resources>

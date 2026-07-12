@@ -11,6 +11,7 @@ import de.ichdj.jukebox.core.PlayHistoryRepository
 import de.ichdj.jukebox.core.SettingsRepository
 import de.ichdj.jukebox.core.WishStore
 import de.ichdj.jukebox.engine.JukeboxEngine
+import de.ichdj.jukebox.engine.WishLogger
 import de.ichdj.jukebox.net.SpotifyApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,9 +33,10 @@ class AppContainer(context: Context) {
 
     val api = SpotifyApi(httpClient)
     val auth = SpotifyAuthManager(tokenStore, settings, api, httpClient)
+    val wishLogger = WishLogger(api, auth, context)
 
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    val engine = JukeboxEngine(api, auth, settings, history, wishStore, appScope)
+    val engine = JukeboxEngine(api, auth, settings, history, wishStore, wishLogger, appScope)
 }
 
 class IchDjApplication : Application(), ImageLoaderFactory {

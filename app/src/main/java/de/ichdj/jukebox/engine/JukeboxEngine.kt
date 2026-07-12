@@ -60,6 +60,7 @@ class JukeboxEngine(
     private val settings: SettingsRepository,
     private val history: PlayHistoryRepository,
     private val wishStore: WishStore,
+    private val wishLogger: WishLogger,
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(EngineState())
@@ -194,6 +195,9 @@ class JukeboxEngine(
             // Queue optimistisch ergänzen; der nächste Poll liefert die echte Reihenfolge
             _state.update { it.copy(wishes = wishes, queue = it.queue + track) }
             resyncRequests.trySend(Unit) // zeitnah neu abgleichen
+            if (s.wishLogEnabled) {
+                scope.launch { wishLogger.log(track) } // still, stört den Betrieb nie
+            }
             WishResult.Accepted
         }
     }

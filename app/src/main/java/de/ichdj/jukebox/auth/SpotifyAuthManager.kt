@@ -47,8 +47,11 @@ class SpotifyAuthManager(
         /** Muss exakt so im Spotify Developer Dashboard eingetragen sein. */
         const val REDIRECT_URI = "http://127.0.0.1:$REDIRECT_PORT$REDIRECT_PATH"
 
+        // playlist-Scopes: für das Wunsch-Logging in die Tages-Playlist.
+        // Bestehende Verbindungen ohne diese Scopes müssen einmal neu verbinden.
         private const val SCOPES =
-            "user-read-playback-state user-modify-playback-state user-read-currently-playing"
+            "user-read-playback-state user-modify-playback-state " +
+                "user-read-currently-playing playlist-read-private playlist-modify-private"
         private const val AUTH_TIMEOUT_MS = 300_000L
     }
 

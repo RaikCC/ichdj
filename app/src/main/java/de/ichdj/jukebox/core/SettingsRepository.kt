@@ -17,6 +17,8 @@ data class AppSettings(
     val lockMinutes: Int = 90,
     val maxTrackMinutes: Int = 10,
     val wishesEnabled: Boolean = true,
+    val keepScreenOn: Boolean = true,
+    val wishLogEnabled: Boolean = true,
     val pollIntervalSeconds: Int = 4,
     val minPlaySecondsForLock: Int = 5,
 )
@@ -31,6 +33,8 @@ class SettingsRepository(private val context: Context) {
         val LOCK_MINUTES = intPreferencesKey("lock_minutes")
         val MAX_TRACK_MINUTES = intPreferencesKey("max_track_minutes")
         val WISHES_ENABLED = booleanPreferencesKey("wishes_enabled")
+        val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val WISH_LOG_ENABLED = booleanPreferencesKey("wish_log_enabled")
         val POLL_INTERVAL_SECONDS = intPreferencesKey("poll_interval_seconds")
         val MIN_PLAY_SECONDS = intPreferencesKey("min_play_seconds_for_lock")
     }
@@ -44,6 +48,8 @@ class SettingsRepository(private val context: Context) {
             lockMinutes = p[Keys.LOCK_MINUTES] ?: defaults.lockMinutes,
             maxTrackMinutes = p[Keys.MAX_TRACK_MINUTES] ?: defaults.maxTrackMinutes,
             wishesEnabled = p[Keys.WISHES_ENABLED] ?: defaults.wishesEnabled,
+            keepScreenOn = p[Keys.KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
+            wishLogEnabled = p[Keys.WISH_LOG_ENABLED] ?: defaults.wishLogEnabled,
             pollIntervalSeconds = p[Keys.POLL_INTERVAL_SECONDS] ?: defaults.pollIntervalSeconds,
             minPlaySecondsForLock = p[Keys.MIN_PLAY_SECONDS] ?: defaults.minPlaySecondsForLock,
         )
@@ -65,4 +71,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setWishesEnabled(value: Boolean) =
         context.settingsDataStore.edit { it[Keys.WISHES_ENABLED] = value }
+
+    suspend fun setKeepScreenOn(value: Boolean) =
+        context.settingsDataStore.edit { it[Keys.KEEP_SCREEN_ON] = value }
+
+    suspend fun setWishLogEnabled(value: Boolean) =
+        context.settingsDataStore.edit { it[Keys.WISH_LOG_ENABLED] = value }
 }

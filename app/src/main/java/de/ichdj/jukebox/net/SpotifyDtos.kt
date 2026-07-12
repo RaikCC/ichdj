@@ -63,7 +63,26 @@ data class SearchDto(val tracks: TracksPageDto? = null)
 data class TracksPageDto(val items: List<TrackDto> = emptyList())
 
 @Serializable
-data class ProfileDto(@SerialName("display_name") val displayName: String? = null)
+data class ProfileDto(
+    val id: String? = null,
+    @SerialName("display_name") val displayName: String? = null,
+)
+
+@Serializable
+data class PlaylistDto(val id: String? = null, val name: String? = null)
+
+@Serializable
+data class PlaylistPageDto(
+    val items: List<PlaylistDto> = emptyList(),
+    val next: String? = null,
+)
+
+@Serializable
+data class CreatePlaylistRequest(
+    val name: String,
+    val public: Boolean = false,
+    val description: String = "",
+)
 
 @Serializable
 data class TokenResponse(

@@ -328,6 +328,14 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.settings.setWishesEnabled(value) }
     }
 
+    fun setKeepScreenOn(value: Boolean) {
+        viewModelScope.launch { container.settings.setKeepScreenOn(value) }
+    }
+
+    fun setWishLogEnabled(value: Boolean) {
+        viewModelScope.launch { container.settings.setWishLogEnabled(value) }
+    }
+
     companion object {
         fun factory(container: AppContainer): ViewModelProvider.Factory = viewModelFactory {
             initializer { MainViewModel(container) }

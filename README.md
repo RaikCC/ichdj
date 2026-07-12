@@ -67,12 +67,28 @@ Kiosk-Modus ohne Ausbruchsmöglichkeit die App als **Device Owner** setzen:
 adb shell dpm set-device-owner de.ichdj.jukebox/.kiosk.IchDjAdminReceiver
 ```
 
-Rückgängig: `adb shell dpm remove-active-admin de.ichdj.jukebox/.kiosk.IchDjAdminReceiver`
-oder Werksreset.
+Rückgängig machen: Im Veranstaltermenü den Button **„Kiosk-Modus (Device
+Owner) aufheben"** verwenden. (Per adb geht es bei einem echten Device Owner
+NICHT – `dpm remove-active-admin` wird von Android abgelehnt; einziger
+weiterer Ausweg wäre ein Werksreset.)
 
 Das Veranstaltermenü (5× aufs Logo tippen) wird über die Gerätesperre des
 Tablets geschützt (PIN/Muster/Fingerabdruck – ohne Sperre ist es frei
-zugänglich).
+zugänglich). Bleibt die Abfrage unbeantwortet, bricht sie nach 30 Sekunden
+automatisch ab und kehrt zur Besucheransicht zurück.
+
+## Wunsch-Protokoll (Playlist-Logging)
+
+Ist „Wünsche in Spotify-Playlist protokollieren" im Veranstaltermenü aktiv
+(Standard: an), landet jeder angenommene Wunsch zusätzlich in einer privaten
+Tages-Playlist **„Ich DJ Wünsche - JJJJ-MM-TT"** im Spotify-Konto. Die
+Playlist wird beim ersten Wunsch des Tages automatisch angelegt. Das Logging
+läuft komplett still und stört den Betrieb nie – schlägt es fehl (z.B.
+fehlende Berechtigung), passiert einfach nichts.
+
+Hinweis: Dafür braucht die App die Playlist-Berechtigungen. Wurde die
+Spotify-Verbindung mit einer App-Version vor v0.1.9 hergestellt, einmal im
+Veranstaltermenü **trennen und neu verbinden**.
 
 ## Lokal bauen (optional)
 
