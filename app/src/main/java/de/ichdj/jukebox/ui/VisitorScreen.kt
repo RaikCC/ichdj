@@ -17,9 +17,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -68,7 +72,10 @@ fun VisitorScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .safeDrawingPadding() // nie unter Statusleiste/Display-Aussparung geraten
+                // Nur Systemleisten/Display-Aussparung, bewusst OHNE IME: sonst
+                // schiebt die Such-Tastatur die Ansicht zusammen und lässt nach
+                // dem Schließen einen schwarzen Streifen zurück.
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
             LogoBar(onQuintupleTap = onOperatorRequest)
@@ -206,11 +213,16 @@ private fun WishColumn(state: JukeboxUiState, vm: MainViewModel, modifier: Modif
 @Composable
 private fun WishBoxCard(box: WishBoxUi, enabled: Boolean, onClick: () -> Unit) {
     val occupied = box.wish != null
+    // Spielender Wunsch: Neon Ice (wie in der Queue); wartender Wunsch: Electric Rose
+    val boxBorder = when {
+        box.isPlaying -> BorderStroke(2.dp, NeonIce)
+        occupied -> BorderStroke(2.dp, ElectricRose)
+        else -> BorderStroke(1.dp, NeutralOutline)
+    }
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = if (occupied) BorderStroke(2.dp, ElectricRose)
-        else BorderStroke(1.dp, NeutralOutline),
+        border = boxBorder,
         modifier = Modifier
             .fillMaxWidth()
             .height(86.dp)
