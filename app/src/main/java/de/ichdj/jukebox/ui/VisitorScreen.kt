@@ -69,7 +69,7 @@ fun VisitorScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Column(
+        Row(
             Modifier
                 .fillMaxSize()
                 // Nur Systemleisten/Display-Aussparung, bewusst OHNE IME: sonst
@@ -78,22 +78,20 @@ fun VisitorScreen(
                 .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
-            LogoBar(onQuintupleTap = onOperatorRequest)
-            if (state.syncTrouble) {
-                Text(
-                    stringResource(R.string.connection_trouble),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxSize()) {
-                WishColumn(state, vm, Modifier.weight(1f))
-                Spacer(Modifier.width(20.dp))
-                QueueColumn(state, Modifier.weight(1f))
-            }
+            WishColumn(state, vm, onOperatorRequest, Modifier.weight(1f))
+            Spacer(Modifier.width(20.dp))
+            QueueColumn(state, Modifier.weight(1f))
+        }
+        if (state.syncTrouble) {
+            Text(
+                stringResource(R.string.connection_trouble),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 4.dp),
+            )
         }
         if (state.search.visible) {
             SearchOverlay(state.search, vm)
@@ -117,47 +115,65 @@ private fun brandingAsset(baseName: String): String? {
 }
 
 /**
- * Logo-Zeile (mittig zentriert); fünfmaliges schnelles Tippen öffnet das
- * Veranstaltermenü. Angezeigt wird nur die Wordmark (assets/branding/
- * wordmark.*, Logo ist darin integriert); logo.* bleibt als Referenz und
- * Quelle für das App-Icon im Ordner.
+ * Die Wordmark (assets/branding/wordmark.*, Logo integriert); fünfmaliges
+ * schnelles Tippen öffnet das Veranstaltermenü.
  */
 @Composable
-private fun LogoBar(onQuintupleTap: () -> Unit) {
+private fun WordmarkLogo(onQuintupleTap: () -> Unit, modifier: Modifier = Modifier) {
     var tapCount by remember { mutableIntStateOf(0) }
     var lastTapAt by remember { mutableLongStateOf(0L) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-            ) {
-                val now = System.currentTimeMillis()
-                tapCount = if (now - lastTapAt < 800) tapCount + 1 else 1
-                lastTapAt = now
-                if (tapCount >= 5) {
-                    tapCount = 0
-                    onQuintupleTap()
-                }
-            },
-    ) {
-        AsyncImage(
-            model = brandingAsset("wordmark"),
-            contentDescription = stringResource(R.string.logo_text),
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .height(52.dp)
-                .widthIn(max = 360.dp),
-        )
-    }
+    AsyncImage(
+        model = brandingAsset("wordmark"),
+        contentDescription = stringResource(R.string.logo_text),
+        contentScale = ContentScale.Fit,
+        alignment = Alignment.BottomEnd,
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+        ) {
+            val now = System.currentTimeMillis()
+            tapCount = if (now - lastTapAt < 800) tapCount + 1 else 1
+            lastTapAt = now
+            if (tapCount >= 5) {
+                tapCount = 0
+                onQuintupleTap()
+            }
+        },
+    )
 }
 
 @Composable
-private fun WishColumn(state: JukeboxUiState, vm: MainViewModel, modifier: Modifier) {
+private fun WishColumn(
+    state: JukeboxUiState,
+    vm: MainViewModel,
+    onOperatorRequest: () -> Unit,
+    modifier: Modifier,
+) {
     Column(modifier) {
+        // Kopfbereich: "Deine Wünsche" auf der Grundlinie, die Wordmark
+        // rechtsbündig darüber – sie nutzt die volle Höhe bis zum oberen
+        // Bildschirmrand, ohne die Boxen nach unten zu schieben.
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(96.dp),
+        ) {
+            if (state.wishesEnabled) {
+                Text(
+                    stringResource(R.string.wishes_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.BottomStart),
+                )
+            }
+            WordmarkLogo(
+                onQuintupleTap = onOperatorRequest,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .height(96.dp)
+                    .widthIn(max = 340.dp),
+            )
+        }
         if (!state.wishesEnabled) {
             // Keine Boxen: nur der Hinweis, prominent und mittig
             Box(
@@ -175,11 +191,6 @@ private fun WishColumn(state: JukeboxUiState, vm: MainViewModel, modifier: Modif
             }
             return@Column
         }
-        Text(
-            stringResource(R.string.wishes_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         if (state.allBoxesFull) {
             Text(
                 stringResource(R.string.all_boxes_full),

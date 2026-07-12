@@ -8,7 +8,7 @@
     <string name="wish_now_playing">jetzt</string>
     <string name="all_boxes_full">Gerade keine Wunschplätze mehr frei, warte bis der nächste Wunsch gespielt wurde.</string>
     <string name="wishes_disabled">Wünsche sind gerade deaktiviert.</string>
-    <string name="queue_title">Queue</string>
+    <string name="queue_title">Wiedergabeliste</string>
     <string name="wishes_title">Deine Wünsche</string>
     <string name="not_connected">Noch nicht mit Spotify verbunden.</string>
     <string name="connection_trouble">Verbindung zu Spotify gestört – versuche es weiter …</string>
