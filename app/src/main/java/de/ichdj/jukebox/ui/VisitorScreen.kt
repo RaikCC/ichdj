@@ -96,6 +96,9 @@ fun VisitorScreen(
         if (state.search.visible) {
             SearchOverlay(state.search, vm)
         }
+        if (state.pinPromptVisible) {
+            PinPrompt(vm)
+        }
     }
 }
 

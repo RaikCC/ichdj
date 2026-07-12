@@ -74,6 +74,7 @@ data class JukeboxUiState(
     val accountName: String? = null,
     val authBusy: Boolean = false,
     val authError: String? = null,
+    val pinPromptVisible: Boolean = false,
 )
 
 class MainViewModel(private val container: AppContainer) : ViewModel() {
@@ -83,7 +84,17 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     private val searchFlow = MutableStateFlow(SearchUi())
     private val authBusyFlow = MutableStateFlow(false)
     private val authErrorFlow = MutableStateFlow<String?>(null)
+    private val pinPromptFlow = MutableStateFlow(false)
     private var searchJob: Job? = null
+
+    /** Zwischenspeicher der aktuellen Settings für synchrone PIN-Prüfung. */
+    private var latestSettings = AppSettings()
+
+    init {
+        viewModelScope.launch {
+            container.settings.settings.collect { latestSettings = it }
+        }
+    }
 
     /** Sekundentakt, damit Restlaufzeit und Startzeiten laufend stimmen. */
     private val ticker: Flow<Long> = flow {
@@ -104,8 +115,13 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     ) { name, busy, error -> Triple(name, busy, error) }
 
     val uiState: StateFlow<JukeboxUiState> =
-        combine(base, account) { state, (name, busy, error) ->
-            state.copy(accountName = name, authBusy = busy, authError = error)
+        combine(base, account, pinPromptFlow) { state, (name, busy, error), pinVisible ->
+            state.copy(
+                accountName = name,
+                authBusy = busy,
+                authError = error,
+                pinPromptVisible = pinVisible,
+            )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), JukeboxUiState())
 
     private fun buildUiState(
@@ -216,11 +232,33 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
     fun enterOperator() {
         authErrorFlow.value = null
+        pinPromptFlow.value = false
         modeFlow.value = UiMode.OPERATOR
     }
 
     fun exitOperator() {
         modeFlow.value = UiMode.VISITOR
+    }
+
+    /** 5×-Logo-Tipp: ohne PIN direkt ins Menü, sonst PIN-Dialog zeigen. */
+    fun requestOperatorUnlock() {
+        if (latestSettings.operatorPin.isBlank()) enterOperator()
+        else pinPromptFlow.value = true
+    }
+
+    /** true, wenn der PIN stimmte (dann wechselt die App ins Menü). */
+    fun submitPin(entered: String): Boolean {
+        val pin = latestSettings.operatorPin
+        return if (pin.isNotBlank() && entered == pin) {
+            enterOperator()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun cancelPinPrompt() {
+        pinPromptFlow.value = false
     }
 
     // ---- Suche & Wünsche ----
@@ -334,6 +372,10 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
     fun setWishLogEnabled(value: Boolean) {
         viewModelScope.launch { container.settings.setWishLogEnabled(value) }
+    }
+
+    fun setOperatorPin(value: String) {
+        viewModelScope.launch { container.settings.setOperatorPin(value) }
     }
 
     companion object {

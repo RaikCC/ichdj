@@ -38,9 +38,18 @@
 
     <!-- Veranstalter -->
     <string name="operator_title">Veranstalter-Menü</string>
-    <string name="operator_unlock_title">Veranstalter-Menü</string>
-    <string name="operator_unlock_subtitle">Mit der Gerätesperre entsperren</string>
-    <string name="operator_unlock_failed">Entsperren fehlgeschlagen.</string>
+
+    <!-- PIN-Sperre -->
+    <string name="pin_prompt_title">Veranstalter-PIN</string>
+    <string name="pin_wrong">Falscher PIN</string>
+    <string name="operator_section_pin">Menü-Sperre (PIN)</string>
+    <string name="operator_pin_none">Kein PIN gesetzt – das Menü ist ungeschützt. Jeder mit 5× Tippen aufs Logo kommt hinein.</string>
+    <string name="operator_pin_set">PIN ist gesetzt. Beim nächsten Öffnen wird er abgefragt.</string>
+    <string name="operator_pin_new_label">Neuer PIN (4–6 Ziffern)</string>
+    <string name="operator_pin_save">PIN speichern</string>
+    <string name="operator_pin_clear">PIN entfernen</string>
+    <string name="operator_pin_saved">PIN gespeichert.</string>
+    <string name="operator_pin_invalid">Bitte 4 bis 6 Ziffern.</string>
     <string name="operator_section_spotify">Spotify-Verbindung</string>
     <string name="operator_client_id">Spotify Client-ID (aus dem Developer Dashboard)</string>
     <string name="operator_connect">Mit Spotify verbinden</string>

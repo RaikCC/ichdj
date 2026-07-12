@@ -19,6 +19,7 @@ data class AppSettings(
     val wishesEnabled: Boolean = true,
     val keepScreenOn: Boolean = true,
     val wishLogEnabled: Boolean = true,
+    val operatorPin: String = "", // leer = Menü ungeschützt
     val pollIntervalSeconds: Int = 4,
     val minPlaySecondsForLock: Int = 5,
 )
@@ -35,6 +36,7 @@ class SettingsRepository(private val context: Context) {
         val WISHES_ENABLED = booleanPreferencesKey("wishes_enabled")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         val WISH_LOG_ENABLED = booleanPreferencesKey("wish_log_enabled")
+        val OPERATOR_PIN = stringPreferencesKey("operator_pin")
         val POLL_INTERVAL_SECONDS = intPreferencesKey("poll_interval_seconds")
         val MIN_PLAY_SECONDS = intPreferencesKey("min_play_seconds_for_lock")
     }
@@ -50,6 +52,7 @@ class SettingsRepository(private val context: Context) {
             wishesEnabled = p[Keys.WISHES_ENABLED] ?: defaults.wishesEnabled,
             keepScreenOn = p[Keys.KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             wishLogEnabled = p[Keys.WISH_LOG_ENABLED] ?: defaults.wishLogEnabled,
+            operatorPin = p[Keys.OPERATOR_PIN] ?: defaults.operatorPin,
             pollIntervalSeconds = p[Keys.POLL_INTERVAL_SECONDS] ?: defaults.pollIntervalSeconds,
             minPlaySecondsForLock = p[Keys.MIN_PLAY_SECONDS] ?: defaults.minPlaySecondsForLock,
         )
@@ -77,4 +80,7 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setWishLogEnabled(value: Boolean) =
         context.settingsDataStore.edit { it[Keys.WISH_LOG_ENABLED] = value }
+
+    suspend fun setOperatorPin(value: String) =
+        context.settingsDataStore.edit { it[Keys.OPERATOR_PIN] = value }
 }

@@ -173,6 +173,66 @@ fun OperatorScreen(
             )
         }
 
+        SectionCard(stringResource(R.string.operator_section_pin)) {
+            val hasPin = state.settings.operatorPin.isNotBlank()
+            var pinInput by remember { mutableStateOf("") }
+            var status by remember { mutableStateOf<String?>(null) }
+            val invalidMsg = stringResource(R.string.operator_pin_invalid)
+            val savedMsg = stringResource(R.string.operator_pin_saved)
+
+            Text(
+                stringResource(
+                    if (hasPin) R.string.operator_pin_set else R.string.operator_pin_none,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (hasPin) MaterialTheme.colorScheme.secondary
+                else MaterialTheme.colorScheme.error,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = pinInput,
+                onValueChange = { pinInput = it.filter(Char::isDigit).take(6) },
+                label = { Text(stringResource(R.string.operator_pin_new_label)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(
+                    onClick = {
+                        if (pinInput.length in 4..6) {
+                            vm.setOperatorPin(pinInput)
+                            pinInput = ""
+                            status = savedMsg
+                        } else {
+                            status = invalidMsg
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.operator_pin_save))
+                }
+                if (hasPin) {
+                    OutlinedButton(
+                        onClick = {
+                            vm.setOperatorPin("")
+                            pinInput = ""
+                            status = null
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                    ) {
+                        Text(stringResource(R.string.operator_pin_clear))
+                    }
+                }
+            }
+            status?.let {
+                Spacer(Modifier.height(6.dp))
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
         SectionCard(stringResource(R.string.operator_section_kiosk)) {
             var confirmRelease by remember { mutableStateOf(false) }
             Text(

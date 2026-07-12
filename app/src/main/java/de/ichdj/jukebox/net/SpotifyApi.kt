@@ -19,7 +19,13 @@ class SpotifyApiException(val code: Int, message: String) : IOException(message)
 
 class SpotifyApi(private val client: OkHttpClient) {
 
-    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+    // encodeDefaults: sonst fehlt beim Playlist-Anlegen das Feld "public": false,
+    // Spotify legt sie öffentlich an und lehnt das mit playlist-modify-private ab.
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+        encodeDefaults = true
+    }
 
     private suspend fun request(
         token: String,
