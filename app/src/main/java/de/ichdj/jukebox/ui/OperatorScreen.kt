@@ -8,27 +8,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.ichdj.jukebox.BuildConfig
 import de.ichdj.jukebox.R
@@ -45,7 +52,7 @@ fun OperatorScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding() // nicht unter die Navigationsleiste zeichnen
+            .safeDrawingPadding() // nicht unter Leisten/Display-Aussparung zeichnen
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
@@ -85,7 +92,12 @@ fun OperatorScreen(
                     color = MaterialTheme.colorScheme.secondary,
                 )
                 Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = vm::disconnectSpotify) {
+                OutlinedButton(
+                    onClick = vm::disconnectSpotify,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                ) {
                     Text(stringResource(R.string.operator_disconnect))
                 }
             } else {
@@ -167,7 +179,12 @@ fun OperatorScreen(
                 Button(onClick = vm::exitOperator) {
                     Text(stringResource(R.string.operator_back_to_visitor))
                 }
-                OutlinedButton(onClick = onExitApp) {
+                OutlinedButton(
+                    onClick = onExitApp,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                ) {
                     Text(stringResource(R.string.operator_exit_app))
                 }
             }
@@ -186,7 +203,7 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
             Text(
                 title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondary,
             )
             Spacer(Modifier.height(10.dp))
             content()
@@ -194,6 +211,10 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
     }
 }
 
+/**
+ * Zahlenwert mit −/+ in Schritten; Tipp auf den Wert öffnet eine
+ * Numpad-Eingabe für beliebige Werte innerhalb des erlaubten Bereichs.
+ */
 @Composable
 private fun StepperRow(
     label: String,
@@ -202,6 +223,7 @@ private fun StepperRow(
     step: Int,
     onChange: (Int) -> Unit,
 ) {
+    var showInput by remember { mutableStateOf(false) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -209,15 +231,57 @@ private fun StepperRow(
             .padding(vertical = 4.dp),
     ) {
         Text(label, modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { onChange((value - step).coerceIn(range)) }) { Text("–") }
-        Text(
-            "$value",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(horizontal = 14.dp)
-                .width(48.dp),
-            style = MaterialTheme.typography.titleMedium,
+        Button(onClick = { onChange((value - step).coerceIn(range)) }) { Text("–") }
+        TextButton(onClick = { showInput = true }) {
+            Text(
+                "$value",
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(56.dp),
+            )
+        }
+        Button(onClick = { onChange((value + step).coerceIn(range)) }) { Text("+") }
+    }
+
+    if (showInput) {
+        var text by remember { mutableStateOf(value.toString()) }
+        AlertDialog(
+            onDismissRequest = { showInput = false },
+            title = { Text(label) },
+            text = {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { input -> text = input.filter(Char::isDigit).take(5) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    supportingText = {
+                        Text(
+                            stringResource(
+                                R.string.number_input_range,
+                                range.first,
+                                range.last,
+                            ),
+                        )
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        text.toIntOrNull()?.let { onChange(it.coerceIn(range)) }
+                        showInput = false
+                    },
+                ) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showInput = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
         )
-        OutlinedButton(onClick = { onChange((value + step).coerceIn(range)) }) { Text("+") }
     }
 }

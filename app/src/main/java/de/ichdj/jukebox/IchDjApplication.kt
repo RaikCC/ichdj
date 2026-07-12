@@ -2,6 +2,9 @@ package de.ichdj.jukebox
 
 import android.app.Application
 import android.content.Context
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.decode.SvgDecoder
 import de.ichdj.jukebox.auth.SpotifyAuthManager
 import de.ichdj.jukebox.auth.TokenStore
 import de.ichdj.jukebox.core.PlayHistoryRepository
@@ -34,7 +37,7 @@ class AppContainer(context: Context) {
     val engine = JukeboxEngine(api, auth, settings, history, wishStore, appScope)
 }
 
-class IchDjApplication : Application() {
+class IchDjApplication : Application(), ImageLoaderFactory {
     lateinit var container: AppContainer
         private set
 
@@ -42,4 +45,10 @@ class IchDjApplication : Application() {
         super.onCreate()
         container = AppContainer(this)
     }
+
+    /** Coil mit SVG-Decoder, damit Logo/Schriftzug echte SVGs sein können. */
+    override fun newImageLoader(): ImageLoader =
+        ImageLoader.Builder(this)
+            .components { add(SvgDecoder.Factory()) }
+            .build()
 }

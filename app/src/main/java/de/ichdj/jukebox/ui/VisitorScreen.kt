@@ -6,7 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,8 +18,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,16 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import de.ichdj.jukebox.R
-import de.ichdj.jukebox.ui.theme.OnWishContainer
-import de.ichdj.jukebox.ui.theme.SpotifyGreen
-import de.ichdj.jukebox.ui.theme.WishContainer
+import de.ichdj.jukebox.ui.theme.ElectricRose
+import de.ichdj.jukebox.ui.theme.NeonIce
+import de.ichdj.jukebox.ui.theme.NeutralOutline
 
 @Composable
 fun VisitorScreen(
@@ -65,6 +67,7 @@ fun VisitorScreen(
         Column(
             Modifier
                 .fillMaxSize()
+                .safeDrawingPadding() // nie unter Statusleiste/Display-Aussparung geraten
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
             LogoBar(onQuintupleTap = onOperatorRequest)
@@ -73,6 +76,8 @@ fun VisitorScreen(
                     stringResource(R.string.connection_trouble),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -88,37 +93,48 @@ fun VisitorScreen(
     }
 }
 
-/** Logo-Zeile; fünfmaliges schnelles Tippen öffnet das Veranstaltermenü. */
+/**
+ * Logo-Zeile (mittig zentriert); fünfmaliges schnelles Tippen öffnet das
+ * Veranstaltermenü. Die Grafiken sind echte SVGs aus den Assets
+ * (assets/branding/logo.svg und assets/branding/wordmark.svg) und können
+ * dort ausgetauscht werden.
+ */
 @Composable
 private fun LogoBar(onQuintupleTap: () -> Unit) {
     var tapCount by remember { mutableIntStateOf(0) }
     var lastTapAt by remember { mutableLongStateOf(0L) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-        ) {
-            val now = System.currentTimeMillis()
-            tapCount = if (now - lastTapAt < 800) tapCount + 1 else 1
-            lastTapAt = now
-            if (tapCount >= 5) {
-                tapCount = 0
-                onQuintupleTap()
-            }
-        },
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                val now = System.currentTimeMillis()
+                tapCount = if (now - lastTapAt < 800) tapCount + 1 else 1
+                lastTapAt = now
+                if (tapCount >= 5) {
+                    tapCount = 0
+                    onQuintupleTap()
+                }
+            },
     ) {
-        Image(
-            painterResource(R.drawable.ic_cat_logo),
+        AsyncImage(
+            model = "file:///android_asset/branding/logo.svg",
             contentDescription = null,
-            modifier = Modifier.size(44.dp),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(52.dp),
         )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            stringResource(R.string.logo_text),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+        Spacer(Modifier.width(14.dp))
+        AsyncImage(
+            model = "file:///android_asset/branding/wordmark.svg",
+            contentDescription = stringResource(R.string.logo_text),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .height(40.dp)
+                .widthIn(max = 320.dp),
         )
     }
 }
@@ -126,21 +142,33 @@ private fun LogoBar(onQuintupleTap: () -> Unit) {
 @Composable
 private fun WishColumn(state: JukeboxUiState, vm: MainViewModel, modifier: Modifier) {
     Column(modifier) {
+        if (!state.wishesEnabled) {
+            // Keine Boxen: nur der Hinweis, prominent und mittig
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            ) {
+                Text(
+                    stringResource(R.string.wishes_disabled),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            return@Column
+        }
         Text(
             stringResource(R.string.wishes_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        when {
-            !state.wishesEnabled -> Text(
-                stringResource(R.string.wishes_disabled),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            state.allBoxesFull -> Text(
+        if (state.allBoxesFull) {
+            Text(
                 stringResource(R.string.all_boxes_full),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = ElectricRose,
             )
         }
         LazyColumn(
@@ -152,7 +180,7 @@ private fun WishColumn(state: JukeboxUiState, vm: MainViewModel, modifier: Modif
             items(state.boxes.size, key = { it }) { index ->
                 WishBoxCard(
                     box = state.boxes[index],
-                    enabled = state.wishesEnabled && state.connected,
+                    enabled = state.connected,
                     onClick = vm::openSearch,
                 )
             }
@@ -165,8 +193,9 @@ private fun WishBoxCard(box: WishBoxUi, enabled: Boolean, onClick: () -> Unit) {
     val occupied = box.wish != null
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = if (occupied) WishContainer else MaterialTheme.colorScheme.surface,
-        border = if (occupied) null else BorderStroke(1.dp, Color(0x33FFFFFF)),
+        color = MaterialTheme.colorScheme.surface,
+        border = if (occupied) BorderStroke(2.dp, ElectricRose)
+        else BorderStroke(1.dp, NeutralOutline),
         modifier = Modifier
             .fillMaxWidth()
             .height(86.dp)
@@ -193,13 +222,13 @@ private fun WishBoxCard(box: WishBoxUi, enabled: Boolean, onClick: () -> Unit) {
             ) {
                 Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
                     if (box.isPlaying) {
-                        PulsingPlayIcon(tint = OnWishContainer)
+                        PulsingPlayIcon(tint = NeonIce)
                     } else {
                         Text(
                             "${box.number}",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Black,
-                            color = OnWishContainer,
+                            color = ElectricRose,
                         )
                     }
                 }
@@ -216,13 +245,13 @@ private fun WishBoxCard(box: WishBoxUi, enabled: Boolean, onClick: () -> Unit) {
                     Text(
                         track.name,
                         fontWeight = FontWeight.Bold,
-                        color = OnWishContainer,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         track.artists,
-                        color = OnWishContainer.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
@@ -230,17 +259,27 @@ private fun WishBoxCard(box: WishBoxUi, enabled: Boolean, onClick: () -> Unit) {
                 }
                 Spacer(Modifier.width(8.dp))
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        if (box.isPlaying) "-${box.remainingLabel}" else box.durationLabel ?: "",
-                        color = OnWishContainer,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        box.startLabel ?: stringResource(R.string.wish_now_playing),
-                        color = OnWishContainer,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    if (box.isPlaying) {
+                        // Nur der spielende Track zeigt eine (Rest-)Laufzeit
+                        Text(
+                            "-${box.remainingLabel}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            stringResource(R.string.wish_now_playing),
+                            color = NeonIce,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    } else {
+                        Text(
+                            box.startLabel ?: "",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
                 }
             }
         }
@@ -307,16 +346,16 @@ private fun QueueColumn(state: JukeboxUiState, modifier: Modifier) {
 
 @Composable
 private fun QueueItemRow(entry: QueueEntryUi) {
-    val background = when {
-        entry.isWish -> WishContainer
-        entry.isCurrent -> MaterialTheme.colorScheme.surfaceVariant
-        else -> MaterialTheme.colorScheme.surface
+    // Zuordnung über Rahmenfarben: Neon Ice = spielt, Electric Rose = Wunsch
+    val border = when {
+        entry.isCurrent -> BorderStroke(2.dp, NeonIce)
+        entry.isWish -> BorderStroke(2.dp, ElectricRose)
+        else -> BorderStroke(1.dp, NeutralOutline)
     }
-    val foreground = if (entry.isWish) OnWishContainer else MaterialTheme.colorScheme.onSurface
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = background,
-        border = if (entry.isCurrent) BorderStroke(2.dp, SpotifyGreen) else null,
+        color = MaterialTheme.colorScheme.surface,
+        border = border,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -329,7 +368,7 @@ private fun QueueItemRow(entry: QueueEntryUi) {
                         "${entry.wishNumber}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
-                        color = foreground,
+                        color = ElectricRose,
                     )
                 }
                 Spacer(Modifier.width(6.dp))
@@ -353,7 +392,7 @@ private fun QueueItemRow(entry: QueueEntryUi) {
                         Icon(
                             Icons.Default.PlayArrow,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = NeonIce,
                             modifier = Modifier.size(34.dp),
                         )
                     }
@@ -364,13 +403,13 @@ private fun QueueItemRow(entry: QueueEntryUi) {
                 Text(
                     entry.track.name,
                     fontWeight = if (entry.isCurrent) FontWeight.Bold else FontWeight.Medium,
-                    color = foreground,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     entry.track.artists,
-                    color = foreground.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -378,17 +417,27 @@ private fun QueueItemRow(entry: QueueEntryUi) {
             }
             Spacer(Modifier.width(8.dp))
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    if (entry.isCurrent) "-${entry.remainingLabel}" else entry.durationLabel,
-                    color = foreground,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    entry.startLabel ?: stringResource(R.string.wish_now_playing),
-                    color = if (entry.isCurrent) SpotifyGreen else foreground,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                if (entry.isCurrent) {
+                    // Nur der spielende Track zeigt eine (Rest-)Laufzeit
+                    Text(
+                        "-${entry.remainingLabel}",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        stringResource(R.string.wish_now_playing),
+                        color = NeonIce,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    Text(
+                        entry.startLabel ?: "",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
         }
     }

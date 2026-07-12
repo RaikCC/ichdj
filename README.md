@@ -93,6 +93,17 @@ Wichtig: `ICHDJ_BUILD_DIR` setzen, sonst schreibt Gradle nach `app\build` im
 OneDrive-Ordner – OneDrive sperrt dort sporadisch Dateien und der Build
 schlägt mit `AccessDeniedException` fehl.
 
+## Branding / eigene Grafiken
+
+| Asset | Pfad | Format |
+|---|---|---|
+| Katzenkopf-Logo (Besucheransicht) | `app/src/main/assets/branding/logo.svg` | echtes SVG, wird zur Laufzeit gerendert. `width`/`height`-Attribute müssen gesetzt sein. |
+| Schriftzug „I can haz DJ?" (Besucheransicht) | `app/src/main/assets/branding/wordmark.svg` | echtes SVG. Text am besten in Pfade umwandeln, dann ist keine Schriftart nötig. |
+| App-Icon (Launcher) | `app/src/main/res/drawable/ic_launcher_foreground.xml` | Android **Vector Drawable** (kein rohes SVG!). SVG z.B. mit Android Studio („Vector Asset") oder svg2vector konvertieren. Icon-Hintergrundfarbe: `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` bzw. `res/values/colors.xml`. |
+
+Einfach die Dateien unter gleichem Namen ersetzen und pushen – der nächste
+Build nimmt sie automatisch mit.
+
 ## Architektur (Kurzüberblick)
 
 | Paket | Zweck |

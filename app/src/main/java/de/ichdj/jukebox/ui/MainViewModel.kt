@@ -153,7 +153,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         val flaggedWishUris = mutableSetOf<String>()
         es.queue.forEachIndexed { idx, track ->
             val isWish = track.uri in numberByUri && flaggedWishUris.add(track.uri)
-            val startLabel = TimeFormat.clockFloor(cursor)
+            val startLabel = TimeFormat.clockFloor(cursor) + " Uhr"
             startByUri.putIfAbsent(track.uri, startLabel)
             entries += QueueEntryUi(
                 track = track,

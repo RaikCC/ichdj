@@ -5,15 +5,20 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-/** Helle Hinterlegung für Wünsche (Boxen und Queue-Einträge). */
-val WishContainer = Color(0xFFFFE3B3)
-val OnWishContainer = Color(0xFF3A2600)
-val SpotifyGreen = Color(0xFF1DB954)
+// Designfarben (siehe improvements.md)
+val NeonIce = Color(0xFF2DE2E6) // spielender Track (Rahmen, "jetzt"), Verbunden-Status
+val ElectricRose = Color(0xFFF6019D) // gefüllte Wünsche (Rahmen, Nummern)
+val Indigo = Color(0xFF650D89) // Steuerelemente (vormals Orange)
+val DarkAmethyst = Color(0xFF261447) // reserviert
+val MidnightViolet = Color(0xFF0D0221) // reserviert
+
+/** Dezenter Rahmen für neutrale/leere Boxen und Queue-Einträge. */
+val NeutralOutline = Color(0x33FFFFFF)
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFFFFB74D),
-    onPrimary = Color(0xFF201400),
-    secondary = SpotifyGreen,
+    primary = Indigo,
+    onPrimary = Color.White,
+    secondary = NeonIce,
     onSecondary = Color.Black,
     background = Color(0xFF121212),
     onBackground = Color(0xFFEDEDED),
